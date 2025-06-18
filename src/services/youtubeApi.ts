@@ -1,5 +1,4 @@
-
-const YOUTUBE_API_KEY = 'YOUR_YOUTUBE_API_KEY'; // Users will need to add their API key
+const YOUTUBE_API_KEY = 'AIzaSyC2TevHy3NjzshQAN8n2J38HQMdaY-_HFo';
 
 export interface YouTubeVideoData {
   title: string;
@@ -36,13 +35,9 @@ export const fetchVideoData = async (videoUrl: string): Promise<YouTubeVideoData
     throw new Error('Invalid YouTube URL');
   }
 
-  if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === 'YOUR_YOUTUBE_API_KEY') {
-    // Return mock data with a warning if no API key is provided
-    console.warn('YouTube API key not configured. Using mock data.');
-    return getMockDataForUrl(videoUrl);
-  }
-
   try {
+    console.log('Fetching real YouTube data for video ID:', videoId);
+    
     // Fetch video details
     const videoResponse = await fetch(
       `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet,statistics,contentDetails&key=${YOUTUBE_API_KEY}`
