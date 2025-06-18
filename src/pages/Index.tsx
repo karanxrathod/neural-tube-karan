@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { fetchVideoData, calculateEngagementMetrics, extractVideoId } from '@/services/youtubeApi';
@@ -78,7 +77,7 @@ const Index = () => {
         {isAnalyzing && <LoadingIndicator />}
 
         {analysisData && !isAnalyzing && (
-          <AnalysisResults analysisData={analysisData} />
+          <AnalysisResults analysisData={analysisData} videoUrl={videoUrl} />
         )}
 
         {!analysisData && !isAnalyzing && <FeaturesPreview />}
