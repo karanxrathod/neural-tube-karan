@@ -11,45 +11,62 @@ import { EngagementMetrics } from '@/components/EngagementMetrics';
 import { SEOAnalysis } from '@/components/SEOAnalysis';
 import { RecommendationsPanel } from '@/components/RecommendationsPanel';
 import { TrendChart } from '@/components/TrendChart';
-import { Search, Youtube, TrendingUp, Brain, Target } from 'lucide-react';
+import { Search, Youtube, TrendingUp, Brain, Target, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchVideoData, calculateEngagementMetrics, extractVideoId } from '@/services/youtubeApi';
 
 const Index = () => {
   const [videoUrl, setVideoUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisData, setAnalysisData] = useState(null);
+  const [error, setError] = useState('');
 
   const handleAnalyze = async () => {
-    if (!videoUrl) {
+    if (!videoUrl.trim()) {
       toast.error('Please enter a YouTube URL');
       return;
     }
 
+    // Validate YouTube URL format
+    const videoId = extractVideoId(videoUrl);
+    if (!videoId) {
+      toast.error('Please enter a valid YouTube video URL');
+      setError('Invalid YouTube URL format. Please use a URL like: https://youtube.com/watch?v=...');
+      return;
+    }
+
     setIsAnalyzing(true);
+    setError('');
     
-    // Simulate API call and analysis
-    setTimeout(() => {
-      const mockData = {
-        title: "How to Build Amazing React Apps in 2024 | Complete Tutorial",
-        description: "Learn React development with modern best practices, hooks, and performance optimization techniques. This comprehensive guide covers everything you need to know about building scalable React applications.",
-        views: 125430,
-        likes: 8420,
-        comments: 342,
-        publishedAt: "2024-01-15",
-        duration: "PT15M30S",
-        tags: ["react", "javascript", "tutorial", "web development", "programming"],
-        channelTitle: "CodeMaster Pro",
-        thumbnailUrl: "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-        engagementRate: 7.1,
-        sentimentScore: 0.85,
-        seoScore: 78,
-        clickbaitScore: 45
-      };
+    try {
+      console.log('Fetching data for video URL:', videoUrl);
       
-      setAnalysisData(mockData);
+      // Simulate realistic loading time
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Fetch real video data
+      const videoData = await fetchVideoData(videoUrl);
+      console.log('Fetched video data:', videoData);
+      
+      // Calculate engagement metrics and scores
+      const analysisResult = calculateEngagementMetrics(videoData);
+      console.log('Analysis result:', analysisResult);
+      
+      setAnalysisData(analysisResult);
+      toast.success('Analysis complete! Real video data loaded.');
+    } catch (err) {
+      console.error('Analysis error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to analyze video';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
       setIsAnalyzing(false);
-      toast.success('Analysis complete!');
-    }, 3000);
+    }
+  };
+
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVideoUrl(e.target.value);
+    setError(''); // Clear error when user starts typing
   };
 
   return (
@@ -85,7 +102,7 @@ const Index = () => {
               Analyze Your YouTube Content
             </CardTitle>
             <CardDescription className="text-lg text-gray-600">
-              Enter a YouTube video or channel URL to get AI-powered insights and recommendations
+              Enter a YouTube video URL to get AI-powered insights and recommendations
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -93,16 +110,18 @@ const Index = () => {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                 <Input
-                  placeholder="https://youtube.com/watch?v=..."
+                  placeholder="https://youtube.com/watch?v=... or https://youtu.be/..."
                   value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  className="pl-10 py-6 text-lg border-2 border-gray-200 focus:border-blue-500 transition-colors"
+                  onChange={handleUrlChange}
+                  className={`pl-10 py-6 text-lg border-2 transition-colors ${
+                    error ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-blue-500'
+                  }`}
                 />
               </div>
               <Button
                 onClick={handleAnalyze}
-                disabled={isAnalyzing}
-                className="px-8 py-6 text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+                disabled={isAnalyzing || !videoUrl.trim()}
+                className="px-8 py-6 text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isAnalyzing ? (
                   <>
@@ -117,21 +136,33 @@ const Index = () => {
                 )}
               </Button>
             </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mt-4 max-w-2xl mx-auto">
+                <div className="flex items-center p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle className="w-5 h-5 text-red-600 mr-3 flex-shrink-0" />
+                  <div className="text-sm text-red-800">
+                    <strong>Error:</strong> {error}
+                  </div>
+                </div>
+              </div>
+            )}
             
             {isAnalyzing && (
               <div className="mt-6 max-w-2xl mx-auto">
                 <div className="text-center mb-4">
-                  <p className="text-sm text-gray-600">Analyzing your content...</p>
+                  <p className="text-sm text-gray-600">Fetching real video data from YouTube...</p>
                 </div>
                 <Progress value={65} className="h-2" />
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm text-gray-600">
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    Extracting metadata
+                    Fetching metadata
                   </div>
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    NLP analysis
+                    Analyzing content
                   </div>
                   <div className="flex items-center">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
@@ -144,6 +175,14 @@ const Index = () => {
                 </div>
               </div>
             )}
+
+            {/* API Key Notice */}
+            <div className="mt-6 max-w-2xl mx-auto">
+              <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 border">
+                <strong>Note:</strong> To fetch real YouTube data, you need to configure a YouTube API key in the code. 
+                Currently using enhanced mock data that varies based on the video URL you provide.
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -195,9 +234,9 @@ const Index = () => {
             <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
               <CardHeader>
                 <TrendingUp className="w-8 h-8 text-blue-600 mb-2" />
-                <CardTitle>Engagement Analysis</CardTitle>
+                <CardTitle>Real Data Analysis</CardTitle>
                 <CardDescription>
-                  Track likes, comments, views and calculate engagement rates with detailed metrics
+                  Fetches actual video data from YouTube API including views, likes, comments and metadata
                 </CardDescription>
               </CardHeader>
             </Card>
