@@ -34,8 +34,8 @@ export const YouTubeDownloader: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Replace with your deployed backend URL
-      const API_URL = process.env.REACT_APP_API_URL || 'https://your-backend-service.com';
+      // Updated to use your Railway deployment URL
+      const API_URL = 'https://neural-tube-karan-production.up.railway.app';
       
       toast.info('Starting download...');
       
