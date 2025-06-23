@@ -19,6 +19,15 @@ export const YouTubeDownloader: React.FC = () => {
   const isValidUrl = youtubeUrlRegex.test(url);
   const canDownload = isValidUrl && hasPermission && !isLoading;
 
+  const triggerDownload = (downloadUrl: string, filename: string = 'video.mp4') => {
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const downloadVideo = async () => {
     if (!canDownload) return;
 
@@ -44,14 +53,9 @@ export const YouTubeDownloader: React.FC = () => {
         throw new Error(data.detail || data.error || 'Download failed');
       }
       
-      // Trigger file download
-      const link = document.createElement('a');
-      link.href = data.downloadUrl;
-      link.download = 'video.mp4';
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // Trigger real file download
+      const fullDownloadUrl = `${API_URL}${data.downloadUrl}`;
+      triggerDownload(fullDownloadUrl, `youtube_video_${Date.now()}.mp4`);
       
       toast.success('Download started! Check your downloads folder.');
       
