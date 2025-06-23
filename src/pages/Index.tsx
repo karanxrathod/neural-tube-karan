@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { fetchVideoData, calculateEngagementMetrics, extractVideoId } from '@/services/youtubeApi';
@@ -6,6 +7,7 @@ import { URLInputSection } from '@/components/URLInputSection';
 import { LoadingIndicator } from '@/components/LoadingIndicator';
 import { AnalysisResults } from '@/components/AnalysisResults';
 import { FeaturesPreview } from '@/components/FeaturesPreview';
+import { YouTubeDownloader } from '@/components/YouTubeDownloader';
 
 const Index = () => {
   const [videoUrl, setVideoUrl] = useState('');
@@ -80,7 +82,16 @@ const Index = () => {
           <AnalysisResults analysisData={analysisData} videoUrl={videoUrl} />
         )}
 
-        {!analysisData && !isAnalyzing && <FeaturesPreview />}
+        {!analysisData && !isAnalyzing && (
+          <div className="space-y-8">
+            <FeaturesPreview />
+            
+            {/* YouTube Downloader Section */}
+            <div className="max-w-2xl mx-auto">
+              <YouTubeDownloader />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
